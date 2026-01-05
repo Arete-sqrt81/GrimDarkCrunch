@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.env
+*.env
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Output / temp files
+output/*.csv
+output/*.json
+*.log
+
+# macOS junk (ignore even on Windows)
+.DS_Store
+
+# Optional: ignore large test files or backups
+*.bak
