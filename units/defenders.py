@@ -25,5 +25,13 @@ def get_defenders():
             'wounds_per_model': 3,
             'invuln_save': None,
         },
+        "Terminator Assault Squad w Storm Shield": {
+        'name': 'Terminator Assault Squad w Storm Shield',
+        'models': 5,  # typical minimum size (can increase to 10 later)
+        'toughness': 5,
+        'save': 2,
+        'wounds_per_model': 4,  # uniform for simplicity; Sergeant has W=4 via Storm Shield
+        'invuln_save': 4,       # 4++ invuln from Storm Shield
+    }
         # Add more metagame defenders here later
     }
