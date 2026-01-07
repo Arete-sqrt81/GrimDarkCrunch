@@ -3,7 +3,7 @@ def get_defenders():
     return {
         "5x Assault Intercessors": {
             'name': '5x Assault Intercessors',
-            'models': 5,
+            'models': 10,
             'toughness': 4,
             'save': 3,
             'wounds_per_model': 2,
@@ -11,7 +11,7 @@ def get_defenders():
         },
         "Chaos Rhino": {
             'name': 'Chaos Rhino',
-            'models': 1,
+            'models': 2,
             'toughness': 9,
             'save': 3,
             'wounds_per_model': 10,

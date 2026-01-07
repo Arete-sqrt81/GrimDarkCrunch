@@ -13,6 +13,8 @@ from units.common import get_wound_threshold
 from units.common import roll_damage
 from units.common import get_average_damage
 
+## NEXT STEPS: add Stratagem
+
 
 parser = argparse.ArgumentParser(description="Warhammer 40k melee damage simulator")
 parser.add_argument(
@@ -32,6 +34,12 @@ parser.add_argument(
     type=int,
     default=1000,
     help="Number of simulations per matchup (default: 1000)"
+)
+parser.add_argument(
+    '--strat',
+    type=str,
+    default=None,
+    help="Stratagem to apply (e.g. 'Channelled Wrath')"
 )
 args = parser.parse_args()
 
@@ -117,9 +125,25 @@ def simulate_melee(attacker, defender, num_sims=1000):  # Low for dev, change to
     # Final order: high-D first (agnostic among them → keep original relative order), then low-D in increasing D
     fixed_order_indices = high_d_groups + low_d_groups
     
+    
+    
     # Debug: show chosen order
     print(f"Chosen weapon order (indices): {fixed_order_indices}")
     print(f"Weapon names in order: {[groups[i]['weapon_name'] for i in fixed_order_indices]}")
+    
+    # Apply stratagem modifiers
+    strat_active = attacker.get('strat_active')
+    if strat_active == 'Channelled Wrath':
+        for g in groups:
+            # Add Lance to all melee weapons
+            if 'abilities' not in g:
+                g['abilities'] = []
+            if 'lance' not in g['abilities']:
+                g['abilities'].append('lance')
+            
+            # If unit has KHORNE, improve AP by 1
+            if 'KHORNE' in attacker.get('keywords', []):
+                g['ap'] = g.get('ap', 0) - 1  # AP is negative, so -1 makes it more negative
     
     for sim in range(num_sims):
         group_damage_lists = [[] for _ in range(num_groups)]
@@ -133,18 +157,44 @@ def simulate_melee(attacker, defender, num_sims=1000):  # Low for dev, change to
             if total_attacks == 0:
                 continue
             
+            # Hit phase
             hit_rolls = rng.integers(1, 7, total_attacks)
-            hits = np.sum(hit_rolls >= g['ws'])
-            
-            if hits == 0:
+            basic_hits = np.sum(hit_rolls >= g['ws'])
+
+            hits = basic_hits
+
+            # Sustained Hits 1 (still here, unchanged)
+            if 'sustained hits 1' in g.get('abilities', []):
+                critical_hits = np.sum(hit_rolls == 6)
+                hits += critical_hits  # each 6 adds 1 extra hit
+
+            # Lethal Hits: Critical Hits (6 to hit) auto-wound (bypass wound roll)
+            if 'lethal hits' in g.get('abilities', []):
+                auto_wounds = np.sum(hit_rolls == 6)
+            else:
+                auto_wounds = 0
+
+            # Normal hits go to wound roll
+            normal_hits = hits - auto_wounds  # subtract auto-wounds (they don't roll wound)
+
+            if normal_hits == 0 and auto_wounds == 0:
+                wounds = 0
                 continue
-            
+
+            # Wound phase for normal hits only
             s = g['strength']
             t = defender['toughness']
             wound_threshold = get_wound_threshold(s, t)
-            
-            wound_rolls = rng.integers(1, 7, hits)
-            wounds = np.sum(wound_rolls >= wound_threshold)
+
+            # Lance (unchanged)
+            if 'lance' in g.get('abilities', []):
+                wound_threshold = max(2, wound_threshold - 1)
+
+            normal_wound_rolls = rng.integers(1, 7, normal_hits)
+            normal_wounds = np.sum(normal_wound_rolls >= wound_threshold)
+
+            # Total wounds = auto + normal
+            wounds = auto_wounds + normal_wounds
             
             if wounds == 0:
                 continue
@@ -222,33 +272,48 @@ def simulate_melee(attacker, defender, num_sims=1000):  # Low for dev, change to
         'destroy_probability_%': destroy_prob
     }
 
-# Main loop: run for each selected attacker vs each defender
+# Main loop: collect all results first
 table_data = []
-for att_name in selected_attackers:
-    attacker = attackers[att_name]
-    for def_name in selected_defenders:
-        defender = defenders[def_name]
-        print(f"  Running: {att_name} vs {def_name}")  # <--- ADD THIS
-        results = simulate_melee(attacker, defender, args.num_sims)
-        table_data.append([
-            att_name,
-            def_name,
-            f"{results['avg_models_destroyed']:.2f}",
-            f"{results['avg_partial_damage']:.2f}",
-            f"{results['avg_wounds_inflicted']:.2f}",
-            f"{results['destroy_probability_%']:.2f}%"
-        ])
+strats_to_apply = [None]
+if args.strat:
+    strats_to_apply.append(args.strat)
+
+for def_name in selected_defenders:
+    defender = defenders[def_name]
+    for att_name in selected_attackers:
+        attacker_base = attackers[att_name]
+        for strat_name in strats_to_apply:
+            # Create modified attacker copy
+            attacker = attacker_base.copy()
+            attacker['strat_active'] = strat_name
+            
+            display_name = att_name
+            if strat_name:
+                display_name += f" with {strat_name}"
+            
+            print(f"  Running: {display_name} vs {def_name}")
+            
+            results = simulate_melee(attacker, defender, args.num_sims)
+            
+            table_data.append([
+                display_name,
+                def_name,
+                f"{results['avg_models_destroyed']:.2f}",
+                f"{results['avg_partial_damage']:.2f}",
+                f"{results['avg_wounds_inflicted']:.2f}",
+                f"{results['destroy_probability_%']:.2f}%"
+            ])
 
 # Print results in a table
 headers = ["Attacker", "Defender", "Avg Destroyed", "Avg Partial", "Avg Inflicted", "Destroy %"]
 print(tabulate(table_data, headers=headers, tablefmt="grid"))
 
+# Save CSV
 os.makedirs("output", exist_ok=True)
 csv_path = "output/results.csv"
-
 with open(csv_path, 'w', newline='') as f:
     writer = csv.writer(f)
-    writer.writerow(["Attacker", "Defender", "Avg Destroyed", "Avg Partial", "Avg Inflicted", "Destroy %"])
+    writer.writerow(headers)
     for row in table_data:
         writer.writerow(row)
 

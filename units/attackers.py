@@ -41,6 +41,7 @@ def get_attackers():
         "Bloodthirster (Great Axe of Khorne - Strike)": {
             'name': 'Bloodthirster (Great Axe of Khorne - Strike)',
             'models_total': 1,
+            'keywords': ['KHORNE', 'DAEMON', 'SHADOW LEGION'],
             'melee_weapon_groups': [
                 {
                     'count': 1,
@@ -49,14 +50,15 @@ def get_attackers():
                     'ws': 2,
                     'strength': 16,
                     'ap': -4,
-                    'damage': 'D6+2',  # ← string instead of number
-                    'abilities': ['devastating wounds'],
+                    'damage': 'D6+2',
+                    'abilities': [],
                 },
             ],
         },
         "Bloodthirster (Great Axe of Khorne - Sweep)": {
             'name': 'Bloodthirster (Great Axe of Khorne - Sweep)',
             'models_total': 1,
+            'keywords': ['KHORNE', 'DAEMON', 'SHADOW LEGION'],
             'melee_weapon_groups': [
                 {
                     'count': 1,
@@ -66,13 +68,14 @@ def get_attackers():
                     'strength': 10,
                     'ap': -2,
                     'damage': 2,
-                    'abilities': ['devastating wounds'],
+                    'abilities': [],
                 },
             ],
         },
-        "Chaos Chosen + Chaos Lord": {
-            'name': 'Chaos Chosen + Chaos Lord',
-            'models_total': 10,  # 10 Chosen + 1 Lord
+        "Chaos Chosen + Chaos Lord - Lethal Hits": {
+            'name': 'Chaos Chosen + Chaos Lord - Lethal Hits',
+            'models_total': 11,  # 10 Chosen + 1 Lord
+            'keywords': ['CHAOS', 'SHADOW LEGION'],
             'melee_weapon_groups': [
                 # Chaos Lord
                 {
@@ -83,7 +86,7 @@ def get_attackers():
                     'strength': 8,
                     'ap': -2,
                     'damage': 2,
-                    'abilities': [],
+                    'abilities': ['lethal hits'],
                 },
                 # Chaos Chosen
                 {
@@ -94,7 +97,7 @@ def get_attackers():
                     'strength': 5,
                     'ap': -2,
                     'damage': 1,
-                    'abilities': ['twin-linked'],
+                    'abilities': ['twin-linked', 'lethal hits'],
                 },
                 {
                     'count': 2,
@@ -104,7 +107,7 @@ def get_attackers():
                     'strength': 8,
                     'ap': -2,
                     'damage': 2,
-                    'abilities': [],
+                    'abilities': ['lethal hits'],
                 },
                 {
                     'count': 6,
@@ -114,7 +117,57 @@ def get_attackers():
                     'strength': 5,
                     'ap': -2,
                     'damage': 1,
-                    'abilities': [],
+                    'abilities': ['lethal hits'],
+                },
+            ],
+        },
+
+        "Chaos Chosen + Chaos Lord - Sustained Hits 1": {
+            'name': 'Chaos Chosen + Chaos Lord - Sustained Hits 1',
+            'models_total': 11,  # 10 Chosen + 1 Lord
+            'keywords': ['CHAOS', 'SHADOW LEGION'],
+            'melee_weapon_groups': [
+                # Chaos Lord
+                {
+                    'count': 1,
+                    'weapon_name': 'Power fist (Lord)',
+                    'attacks': 5,
+                    'ws': 2,
+                    'strength': 8,
+                    'ap': -2,
+                    'damage': 2,
+                    'abilities': ['sustained hits 1'],
+                },
+                # Chaos Chosen
+                {
+                    'count': 2,
+                    'weapon_name': 'Paired accursed weapons (Chosen)',
+                    'attacks': 5,
+                    'ws': 3,
+                    'strength': 5,
+                    'ap': -2,
+                    'damage': 1,
+                    'abilities': ['twin-linked', 'sustained hits 1'],
+                },
+                {
+                    'count': 2,
+                    'weapon_name': 'Power Fist (Chosen)',
+                    'attacks': 4,
+                    'ws': 3,
+                    'strength': 8,
+                    'ap': -2,
+                    'damage': 2,
+                    'abilities': ['sustained hits 1'],
+                },
+                {
+                    'count': 6,
+                    'weapon_name': 'Accursed weapons (Chosen)',
+                    'attacks': 4,
+                    'ws': 3,
+                    'strength': 5,
+                    'ap': -2,
+                    'damage': 1,
+                    'abilities': ['sustained hits 1'],
                 },
             ],
         },
